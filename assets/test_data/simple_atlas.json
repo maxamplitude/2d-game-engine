@@ -1,0 +1,17 @@
+{
+    "texture": "simple_atlas.png",
+    "frames": [
+      {"name": "sprite_0", "x": 0, "y": 0, "w": 16, "h": 16},
+      {"name": "sprite_1", "x": 16, "y": 0, "w": 16, "h": 16},
+      {"name": "sprite_2", "x": 32, "y": 0, "w": 16, "h": 16},
+      {"name": "sprite_3", "x": 48, "y": 0, "w": 16, "h": 16}
+    ],
+    "animations": [
+      {
+        "name": "spin",
+        "frames": ["sprite_0", "sprite_1", "sprite_2", "sprite_3"],
+        "frameDuration": 0.1,
+        "loop": true
+      }
+    ]
+  }

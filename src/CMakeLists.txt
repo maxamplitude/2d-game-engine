@@ -3,13 +3,28 @@ set(ENGINE_SOURCES
     core/transform.cpp
     core/time_manager.cpp
     math/rectangle.cpp
+    rendering/texture_atlas.cpp
+    animation/animation_controller.cpp
+    animation/animation_state_machine.cpp
 )
 
 set(ENGINE_HEADERS
     core/transform.h
     core/time_manager.h
     math/rectangle.h
+    rendering/texture_atlas.h
+    animation/animation_controller.h
+    animation/animation_state_machine.h
 )
+
+# Add nlohmann/json for metadata parsing
+include(FetchContent)
+FetchContent_Declare(
+    json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.11.2
+)
+FetchContent_MakeAvailable(json)
 
 # Engine library (for testing)
 add_library(EngineLib STATIC
@@ -26,6 +41,7 @@ target_link_libraries(EngineLib PUBLIC
     sfml-window
     sfml-graphics
     sfml-audio
+    nlohmann_json::nlohmann_json
 )
 
 # Main executable

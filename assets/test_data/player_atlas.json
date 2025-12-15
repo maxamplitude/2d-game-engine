@@ -1,0 +1,124 @@
+{
+    "texture": "player_atlas.png",
+    "frames": [
+      {
+        "name": "player_idle_0",
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32,
+        "originX": 16,
+        "originY": 32
+      },
+      {
+        "name": "player_idle_1",
+        "x": 32,
+        "y": 0,
+        "w": 32,
+        "h": 32,
+        "originX": 16,
+        "originY": 32
+      },
+      {
+        "name": "player_idle_2",
+        "x": 64,
+        "y": 0,
+        "w": 32,
+        "h": 32,
+        "originX": 16,
+        "originY": 32
+      },
+      {
+        "name": "player_idle_3",
+        "x": 96,
+        "y": 0,
+        "w": 32,
+        "h": 32,
+        "originX": 16,
+        "originY": 32
+      },
+      {
+        "name": "player_walk_0",
+        "x": 0,
+        "y": 32,
+        "w": 32,
+        "h": 32,
+        "originX": 16,
+        "originY": 32
+      },
+      {
+        "name": "player_walk_1",
+        "x": 32,
+        "y": 32,
+        "w": 32,
+        "h": 32,
+        "originX": 16,
+        "originY": 32
+      },
+      {
+        "name": "player_walk_2",
+        "x": 64,
+        "y": 32,
+        "w": 32,
+        "h": 32,
+        "originX": 16,
+        "originY": 32
+      },
+      {
+        "name": "player_walk_3",
+        "x": 96,
+        "y": 32,
+        "w": 32,
+        "h": 32,
+        "originX": 16,
+        "originY": 32
+      },
+      {
+        "name": "player_jump_0",
+        "x": 0,
+        "y": 64,
+        "w": 32,
+        "h": 32,
+        "originX": 16,
+        "originY": 32
+      },
+      {
+        "name": "player_jump_1",
+        "x": 32,
+        "y": 64,
+        "w": 32,
+        "h": 32,
+        "originX": 16,
+        "originY": 32
+      },
+      {
+        "name": "player_jump_2",
+        "x": 64,
+        "y": 64,
+        "w": 32,
+        "h": 32,
+        "originX": 16,
+        "originY": 32
+      }
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "frames": ["player_idle_0", "player_idle_1", "player_idle_2", "player_idle_3"],
+        "frameDuration": 0.15,
+        "loop": true
+      },
+      {
+        "name": "walk",
+        "frames": ["player_walk_0", "player_walk_1", "player_walk_2", "player_walk_3"],
+        "frameDuration": 0.1,
+        "loop": true
+      },
+      {
+        "name": "jump",
+        "frames": ["player_jump_0", "player_jump_1", "player_jump_2"],
+        "frameDurations": [0.05, 0.15, 0.3],
+        "loop": false
+      }
+    ]
+  }
