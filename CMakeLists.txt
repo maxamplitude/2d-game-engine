@@ -15,7 +15,7 @@ endif()
 
 # Build options
 option(BUILD_TESTS "Build unit tests" ON)
-option(BUILD_EXAMPLES "Build example games" OFF)
+option(BUILD_EXAMPLES "Build example games" ON)
 
 # Find SFML
 find_package(SFML 2.5 COMPONENTS system window graphics audio REQUIRED)
@@ -27,11 +27,13 @@ message(STATUS "SFML include dir: ${SFML_INCLUDE_DIR}")
 # Add subdirectories
 add_subdirectory(src)
 
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
+
+
 if(BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif()
 
-if(BUILD_EXAMPLES)
-    add_subdirectory(examples)
-endif()

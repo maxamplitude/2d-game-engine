@@ -4,8 +4,10 @@ set(ENGINE_SOURCES
     core/time_manager.cpp
     math/rectangle.cpp
     rendering/texture_atlas.cpp
+    rendering/camera.cpp
     animation/animation_controller.cpp
     animation/animation_state_machine.cpp
+    input/input_manager.cpp
 )
 
 set(ENGINE_HEADERS
@@ -13,8 +15,10 @@ set(ENGINE_HEADERS
     core/time_manager.h
     math/rectangle.h
     rendering/texture_atlas.h
+    rendering/camera.h
     animation/animation_controller.h
     animation/animation_state_machine.h
+    input/input_manager.h
 )
 
 # Add nlohmann/json for metadata parsing
