@@ -8,6 +8,8 @@ set(ENGINE_SOURCES
     animation/animation_controller.cpp
     animation/animation_state_machine.cpp
     input/input_manager.cpp
+    scene/scene_manager.cpp
+    scene/scene.cpp
 )
 
 set(ENGINE_HEADERS
@@ -19,6 +21,8 @@ set(ENGINE_HEADERS
     animation/animation_controller.h
     animation/animation_state_machine.h
     input/input_manager.h
+    scene/scene_manager.h
+    scene/scene.h
 )
 
 # Add nlohmann/json for metadata parsing

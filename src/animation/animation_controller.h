@@ -1,6 +1,7 @@
 // src/Animation/AnimationController.h
 #pragma once
 #include "rendering/texture_atlas.h"
+#include <functional>
 #include <SFML/Graphics.hpp>
 #include <string>
 
