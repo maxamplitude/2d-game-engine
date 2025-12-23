@@ -57,6 +57,7 @@ private:
     
     bool shouldCull(const RenderItem& item) const;
     Vec2 worldToScreen(const Vec2& worldPos) const;
+    Rectangle buildSpriteBounds(const RenderItem& item) const;
     SpriteDrawData buildDrawData(const RenderItem& item) const;
 };
 
@@ -66,7 +67,7 @@ void RenderQueue::render(BatchT& batch, const Mat4& viewProj) {
     batch.begin(viewProj);
     
     for (const auto& item : items) {
-        if (cullingEnabled && shouldCull(item)) {
+        if (shouldCull(item)) {
             ++culledCount;
             continue;
         }

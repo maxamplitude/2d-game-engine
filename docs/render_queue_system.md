@@ -151,12 +151,14 @@ size_t culled = queue.getCulledCount();
 std::cout << "Culled " << culled << " objects\n";
 ```
 
+**How it works now:** The queue builds a sprite-aligned AABB in screen space (using size, scale, and origin) after applying the camera transform. If that box does not intersect `cullingBounds`, the sprite is culled.
+
 **When to enable:**
 - Games with large worlds (1000+ entities)
 - Top-down or side-scrolling levels
 - Not needed for small scenes (<200 entities)
 
-**Current limitation:** Point-based culling. Future: Add sprite bounds checking.
+**Tip:** Keep `cullingBounds` in screen space. If the camera moves to `(-100, -100)`, a world-space object at `(-50, -50)` will still render because its screen-space bounds fall inside `screenBounds`.
 
 ---
 

@@ -38,13 +38,32 @@ void RenderQueue::setCullingBounds(const Rectangle& bounds) {
 }
 
 bool RenderQueue::shouldCull(const RenderItem& item) const {
-    // Simple point-in-rectangle culling using world position
-    return !cullingBounds.contains(item.transform.position);
+    if (!cullingEnabled || cullingBounds.isEmpty()) {
+        return false;
+    }
+
+    // Use sprite bounds in screen space so camera offset is respected.
+    Rectangle bounds = buildSpriteBounds(item);
+    return !cullingBounds.intersects(bounds);
 }
 
 Vec2 RenderQueue::worldToScreen(const Vec2& worldPos) const {
     // Basic camera offset subtraction
     return worldPos - cameraTransform.position;
+}
+
+Rectangle RenderQueue::buildSpriteBounds(const RenderItem& item) const {
+    Vec2 screenPos = worldToScreen(item.transform.position);
+    Vec2 scaledSize = item.sprite.size * item.transform.scale;
+
+    if (scaledSize.x <= 0.0f || scaledSize.y <= 0.0f) {
+        // Degenerate sizes fall back to point culling.
+        return Rectangle(screenPos.x, screenPos.y, 0.0f, 0.0f);
+    }
+
+    Vec2 origin = item.sprite.origin;
+    Vec2 topLeft = screenPos - origin;
+    return Rectangle(topLeft.x, topLeft.y, scaledSize.x, scaledSize.y);
 }
 
 SpriteDrawData RenderQueue::buildDrawData(const RenderItem& item) const {

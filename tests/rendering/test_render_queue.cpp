@@ -214,6 +214,24 @@ TEST_CASE("RenderQueue frustum culling", "[renderqueue][rendering]") {
         REQUIRE(queue.getCulledCount() == 0);
         REQUIRE(batch.drawn.size() == 1);
     }
+
+    SECTION("Camera offset keeps on-screen entities visible") {
+        Transform camera;
+        camera.position = {-200.0f, -200.0f};
+        queue.setCameraTransform(camera);
+
+        Transform transform;
+        transform.position = {-50.0f, -50.0f}; // Would be outside without camera offset
+
+        queue.submit(10.0f, sprite, transform);
+        queue.sort();
+
+        RecordingBatch batch;
+        queue.render(batch, kIdentityViewProj);
+
+        REQUIRE(queue.getCulledCount() == 0);
+        REQUIRE(batch.drawn.size() == 1);
+    }
     
     SECTION("Entity outside bounds is culled") {
         Transform transform;
@@ -245,6 +263,26 @@ TEST_CASE("RenderQueue frustum culling", "[renderqueue][rendering]") {
         
         REQUIRE(queue.getCulledCount() == 1);
         REQUIRE(batch.drawn.size() == 2);
+    }
+
+    SECTION("Sprite bounds prevent false culling when origin is centered") {
+        Rectangle tightBounds(0.0f, 0.0f, 100.0f, 100.0f);
+        queue.setCullingBounds(tightBounds);
+
+        Transform transform;
+        transform.position = {110.0f, 50.0f}; // Point is outside right edge
+
+        SpriteDrawData largeSprite = createTestSprite(Vec2(32.0f, 32.0f));
+        largeSprite.origin = Vec2(16.0f, 16.0f); // Centered origin
+
+        queue.submit(10.0f, largeSprite, transform);
+        queue.sort();
+
+        RecordingBatch batch;
+        queue.render(batch, kIdentityViewProj);
+
+        REQUIRE(queue.getCulledCount() == 0);
+        REQUIRE(batch.drawn.size() == 1);
     }
 }
 

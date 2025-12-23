@@ -1,6 +1,7 @@
 # Collect source files
 set(ENGINE_SOURCES
     animation/animation_controller.cpp
+    animation/animation_state_machine.cpp
     core/time_manager.cpp
     core/transform.cpp
     core/types.cpp
@@ -24,6 +25,7 @@ set(ENGINE_SOURCES
 
 set(ENGINE_HEADERS
     animation/animation_controller.h
+    animation/animation_state_machine.h
     core/time_manager.h
     core/transform.h
     core/types.h
