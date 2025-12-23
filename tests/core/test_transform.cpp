@@ -19,8 +19,8 @@ TEST_CASE("Transform position translation", "[transform][core]") {
     Transform t;
     t.position = {100.0f, 50.0f};
     
-    sf::Vector2f point(10.0f, 5.0f);
-    sf::Vector2f transformed = t.transformPoint(point);
+    Vec2 point(10.0f, 5.0f);
+    Vec2 transformed = t.transformPoint(point);
     
     REQUIRE_THAT(transformed.x, Catch::Matchers::WithinRel(110.0f, 0.01f));
     REQUIRE_THAT(transformed.y, Catch::Matchers::WithinRel(55.0f, 0.01f));
@@ -61,12 +61,12 @@ TEST_CASE("Transform equality comparison", "[transform][core]") {
     REQUIRE(t1 != t3);
 }
 
-TEST_CASE("Transform to SFML transform", "[transform][core]") {
+TEST_CASE("Transform to matrix", "[transform][core]") {
     Transform t;
     t.position = {50.0f, 100.0f};
     
-    sf::Transform sfTransform = t.toSFMLTransform();
-    sf::Vector2f transformed = sfTransform.transformPoint({0.0f, 0.0f});
+    Mat4 mat = t.toMatrix();
+    Vec4 transformed = mat * Vec4(0.0f, 0.0f, 0.0f, 1.0f);
     
     REQUIRE_THAT(transformed.x, Catch::Matchers::WithinRel(50.0f, 0.01f));
     REQUIRE_THAT(transformed.y, Catch::Matchers::WithinRel(100.0f, 0.01f));

@@ -3,19 +3,21 @@
 namespace Engine {
 
 void TimeManager::update() {
-    deltaTime = clock.restart().asSeconds();
-    
-    // Clamp delta time to prevent huge jumps (e.g., when debugging)
+    auto now = std::chrono::steady_clock::now();
+    std::chrono::duration<float> diff = now - lastTick;
+    deltaTime = diff.count();
+
     if (deltaTime > 0.1f) {
         deltaTime = 0.1f;
     }
-    
+
     totalTime += deltaTime;
     frameCount++;
+    lastTick = now;
 }
 
 void TimeManager::reset() {
-    clock.restart();
+    lastTick = std::chrono::steady_clock::now();
     deltaTime = 0.0f;
     totalTime = 0.0f;
     frameCount = 0;

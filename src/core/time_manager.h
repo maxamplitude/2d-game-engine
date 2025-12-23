@@ -1,5 +1,5 @@
 #pragma once
-#include <SFML/System/Clock.hpp>
+#include <chrono>
 
 namespace Engine {
 
@@ -16,7 +16,7 @@ public:
     float getFPS() const;
     
 private:
-    sf::Clock clock;
+    std::chrono::steady_clock::time_point lastTick{std::chrono::steady_clock::now()};
     float deltaTime = 0.0f;
     float totalTime = 0.0f;
     int frameCount = 0;

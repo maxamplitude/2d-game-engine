@@ -33,7 +33,7 @@ TEST_CASE("Rectangle boundary accessors", "[rectangle][math]") {
 
 TEST_CASE("Rectangle center calculation", "[rectangle][math]") {
     Rectangle rect(0.0f, 0.0f, 100.0f, 50.0f);
-    sf::Vector2f center = rect.center();
+    Vec2 center = rect.center();
     
     REQUIRE(center.x == 50.0f);
     REQUIRE(center.y == 25.0f);

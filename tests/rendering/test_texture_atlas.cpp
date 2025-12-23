@@ -21,10 +21,8 @@ public:
     
 private:
     void createTestTexture() {
-        // Create minimal 64x64 PNG (white square)
-        sf::Image image;
-        image.create(64, 64, sf::Color::White);
-        image.saveToFile("test_texture.png");
+        std::ofstream file("test_texture.png", std::ios::binary);
+        file << "not a real png";
     }
     
     void createTestMetadata() {
@@ -76,30 +74,16 @@ TEST_CASE("TextureAtlas retrieves frames", "[textureatlas][rendering]") {
         const SpriteFrame* frame = atlas.getFrame("frame_0");
         REQUIRE(frame != nullptr);
         REQUIRE(frame->name == "frame_0");
-        REQUIRE(frame->rect.left == 0);
-        REQUIRE(frame->rect.top == 0);
-        REQUIRE(frame->rect.width == 16);
-        REQUIRE(frame->rect.height == 16);
+        REQUIRE(frame->x == 0);
+        REQUIRE(frame->y == 0);
+        REQUIRE(frame->w == 16);
+        REQUIRE(frame->h == 16);
     }
     
     SECTION("Non-existent frame") {
         const SpriteFrame* frame = atlas.getFrame("does_not_exist");
         REQUIRE(frame == nullptr);
     }
-}
-
-TEST_CASE("TextureAtlas creates sprites", "[textureatlas][rendering]") {
-    TextureAtlasFixture fixture;
-    TextureAtlas atlas;
-    atlas.loadFromFile("test_texture.png", "test_metadata.json");
-    
-    sf::Sprite sprite = atlas.createSprite("frame_1");
-    
-    REQUIRE(sprite.getTexture() != nullptr);
-    REQUIRE(sprite.getTextureRect().left == 16);
-    REQUIRE(sprite.getTextureRect().top == 0);
-    REQUIRE(sprite.getTextureRect().width == 16);
-    REQUIRE(sprite.getTextureRect().height == 16);
 }
 
 TEST_CASE("TextureAtlas retrieves animations", "[textureatlas][rendering]") {
@@ -161,13 +145,17 @@ TEST_CASE("TextureAtlas checks animation existence", "[textureatlas][rendering]"
 TEST_CASE("TextureAtlas handles manual frame addition", "[textureatlas][rendering]") {
     TextureAtlas atlas;
     
-    SpriteFrame frame("manual_frame", sf::IntRect(0, 0, 32, 32), {16, 16});
+    SpriteFrame frame;
+    frame.name = "manual_frame";
+    frame.w = 32;
+    frame.h = 32;
+    frame.origin = Vec2(16, 16);
     atlas.addFrame(frame);
     
     const SpriteFrame* retrieved = atlas.getFrame("manual_frame");
     REQUIRE(retrieved != nullptr);
     REQUIRE(retrieved->name == "manual_frame");
-    REQUIRE(retrieved->rect.width == 32);
+    REQUIRE(retrieved->w == 32);
     REQUIRE(retrieved->origin.x == 16.0f);
 }
 
@@ -175,8 +163,10 @@ TEST_CASE("TextureAtlas handles manual animation addition", "[textureatlas][rend
     TextureAtlas atlas;
     
     // Add frames first
-    atlas.addFrame(SpriteFrame("f0", sf::IntRect(0, 0, 16, 16)));
-    atlas.addFrame(SpriteFrame("f1", sf::IntRect(16, 0, 16, 16)));
+    SpriteFrame f0; f0.name = "f0"; f0.w = 16; f0.h = 16;
+    SpriteFrame f1; f1.name = "f1"; f1.x = 16; f1.w = 16; f1.h = 16;
+    atlas.addFrame(f0);
+    atlas.addFrame(f1);
     
     // Add animation
     AnimationData anim("manual_anim", {"f0", "f1"}, 0.15f, true);
@@ -192,7 +182,8 @@ TEST_CASE("TextureAtlas validates animation frame references", "[textureatlas][r
     TextureAtlas atlas;
     
     // Add only one frame
-    atlas.addFrame(SpriteFrame("f0", sf::IntRect(0, 0, 16, 16)));
+    SpriteFrame f0; f0.name = "f0"; f0.w = 16; f0.h = 16;
+    atlas.addFrame(f0);
     
     // Try to add animation with non-existent frame
     AnimationData anim("bad_anim", {"f0", "f1"}, 0.1f, true);

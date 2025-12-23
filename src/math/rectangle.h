@@ -1,5 +1,5 @@
 #pragma once
-#include <SFML/System/Vector2.hpp>
+#include "math/vector.h"
 
 namespace Engine {
 
@@ -16,14 +16,11 @@ struct Rectangle {
     float top() const { return y; }
     float bottom() const { return y + height; }
     
-    // Center point
-    sf::Vector2f center() const {
-        return {x + width * 0.5f, y + height * 0.5f};
-    }
+    Vec2 center() const { return Vec2(x + width * 0.5f, y + height * 0.5f); }
     
     // Collision detection
     bool intersects(const Rectangle& other) const;
-    bool contains(const sf::Vector2f& point) const;
+    bool contains(const Vec2& point) const;
     Rectangle getIntersection(const Rectangle& other) const;
     
     // Utility

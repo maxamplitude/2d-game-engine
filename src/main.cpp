@@ -1,119 +1,135 @@
-#include <SFML/Graphics.hpp>
-#include <iostream>
-#include <sstream>
-#include <iomanip>
+#include "platform/platform.h"
+#include "platform/logging.h"
+#include "platform/window.h"
+#include "rendering/renderer.h"
+#include "rendering/quad_renderer.h"
 #include "core/time_manager.h"
-#include "core/transform.h"
-#include "math/rectangle.h"
+#include "core/types.h"
+#include "rendering/camera.h"
+#include "rendering/texture.h"
+#include "scene/scene_manager.h"
+#include "scene/scene.h"
+#include "input/input_manager.h"
+#include <vector>
+#include <glm/gtc/matrix_transform.hpp>
 
 using namespace Engine;
 
 int main() {
-    // Window setup
-    sf::RenderWindow window(sf::VideoMode(800, 600), "Game Engine v0.1");
-    window.setFramerateLimit(60);
-    
-    // Systems
+    Platform::init();
+    Log::init();
+
+    WindowConfig windowConfig;
+    windowConfig.width = 800;
+    windowConfig.height = 600;
+    windowConfig.title = "BGFX + GLFW Engine";
+    Window window(windowConfig);
+
+    RendererConfig rendererConfig;
+    rendererConfig.backend = RendererBackend::Auto;
+    rendererConfig.vsync = true;
+    rendererConfig.debug = true;
+    Renderer renderer(&window, rendererConfig);
+    if (!renderer.isInitialized()) {
+        Log::critical("Renderer failed to initialize. Exiting.");
+        return 1;
+    }
+
+    QuadRenderer quadRenderer;
+    quadRenderer.init();
+
     TimeManager time;
-    
-    // Test entities
-    Transform playerTransform;
-    playerTransform.position = {400.0f, 300.0f};
-    
-    Transform enemyTransform;
-    enemyTransform.position = {600.0f, 300.0f};
-    
-    // Visuals
-    sf::CircleShape player(30.0f);
-    player.setFillColor(sf::Color::Green);
-    player.setOrigin(30.0f, 30.0f);
-    
-    sf::CircleShape enemy(25.0f);
-    enemy.setFillColor(sf::Color::Red);
-    enemy.setOrigin(25.0f, 25.0f);
-    
-    // UI
-    sf::Font font;
-    // Note: You'll need to provide a font file or use system fonts
-    // For now, we'll skip text rendering
-    
-    std::cout << "╔════════════════════════════════════════╗\n";
-    std::cout << "║      Game Engine v0.1 - Running       ║\n";
-    std::cout << "╚════════════════════════════════════════╝\n";
-    std::cout << "\nControls:\n";
-    std::cout << "  Arrow Keys - Move player\n";
-    std::cout << "  ESC        - Quit\n";
-    std::cout << "\nTests: Run 'ctest' in build directory\n\n";
-    
-    // Game loop
-    while (window.isOpen()) {
-        time.update();
-        
-        // Events
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
-                window.close();
-            if (event.type == sf::Event::KeyPressed) {
-                if (event.key.code == sf::Keyboard::Escape)
-                    window.close();
+    InputManager input(window.getNativeHandle());
+
+    // Simple demo scene renders a spinning quad
+    class DemoScene : public Scene {
+    public:
+        DemoScene(Texture* tex, QuadRenderer* renderer, Camera* cam)
+            : texture(tex), quad(renderer), camera(cam) {}
+
+        void update(float dt) override {
+            angle += dt;
+        }
+
+        void handleInput(InputManager& input, float dt) override {
+            float move = 200.0f * dt;
+            if (input.isActionActive("move_left")) camPos.x -= move;
+            if (input.isActionActive("move_right")) camPos.x += move;
+            if (input.isActionActive("move_up")) camPos.y -= move;
+            if (input.isActionActive("move_down")) camPos.y += move;
+            camera->setPosition(camPos);
+        }
+
+        void render(Renderer& renderer) override {
+            Mat4 view = camera->getViewMatrix();
+            Mat4 proj = camera->getProjection(static_cast<float>(renderer.width()),
+                                              static_cast<float>(renderer.height()));
+            Mat4 viewProj = proj * view;
+
+            Mat4 model = glm::translate(glm::mat4(1.0f), Vec3(200.0f, 150.0f, 0.0f));
+            model = glm::translate(model, Vec3(64.0f, 64.0f, 0.0f));
+            model = glm::rotate(model, angle, Vec3(0.0f, 0.0f, 1.0f));
+            model = glm::translate(model, Vec3(-64.0f, -64.0f, 0.0f));
+            model = glm::scale(model, Vec3(128.0f, 128.0f, 1.0f));
+
+            if (texture && texture->isValid()) {
+                quad->draw(viewProj, model, texture->getHandle(), Color::White);
             }
         }
-        
-        // Input (test transform system)
-        float speed = 200.0f * time.getDeltaTime();
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) 
-            playerTransform.position.x += speed;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) 
-            playerTransform.position.x -= speed;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) 
-            playerTransform.position.y -= speed;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) 
-            playerTransform.position.y += speed;
-        
-        // Test collision system
-        Rectangle playerBounds(
-            playerTransform.position.x - 30.0f,
-            playerTransform.position.y - 30.0f,
-            60.0f, 60.0f
-        );
-        
-        Rectangle enemyBounds(
-            enemyTransform.position.x - 25.0f,
-            enemyTransform.position.y - 25.0f,
-            50.0f, 50.0f
-        );
-        
-        bool colliding = playerBounds.intersects(enemyBounds);
-        
-        // Update visuals
-        player.setPosition(playerTransform.position);
-        enemy.setPosition(enemyTransform.position);
-        
-        // Visual feedback for collision
-        if (colliding) {
-            player.setFillColor(sf::Color::Yellow);
-            enemy.setFillColor(sf::Color::Magenta);
-        } else {
-            player.setFillColor(sf::Color::Green);
-            enemy.setFillColor(sf::Color::Red);
+
+    private:
+        Texture* texture;
+        QuadRenderer* quad;
+        Camera* camera;
+        Vec2 camPos{0.0f, 0.0f};
+        float angle = 0.0f;
+    };
+
+    Log::info("Backend: {}", renderer.getBackendName());
+
+    // Create a tiny checkerboard texture
+    Texture checkerTex;
+    {
+        const uint32_t w = 64, h = 64;
+        std::vector<uint8_t> pixels(w * h * 4);
+        for (uint32_t y = 0; y < h; ++y) {
+            for (uint32_t x = 0; x < w; ++x) {
+                bool dark = ((x / 8) + (y / 8)) % 2 == 0;
+                uint8_t c = dark ? 40 : 200;
+                size_t idx = (y * w + x) * 4;
+                pixels[idx + 0] = c;
+                pixels[idx + 1] = c;
+                pixels[idx + 2] = c;
+                pixels[idx + 3] = 255;
+            }
         }
-        
-        // Render
-        window.clear(sf::Color(20, 20, 30));
-        window.draw(enemy);
-        window.draw(player);
-        window.display();
-        
-        // FPS to console every 60 frames
-        if (time.getFrameCount() % 60 == 0) {
-            std::cout << "FPS: " << std::fixed << std::setprecision(1) 
-                      << time.getFPS() << " | "
-                      << "Frame: " << time.getFrameCount() << " | "
-                      << "Collision: " << (colliding ? "YES" : "NO") << "\r" << std::flush;
-        }
+        checkerTex.loadFromMemory(pixels.data(), static_cast<uint32_t>(pixels.size()));
     }
-    
-    std::cout << "\n\nEngine shutting down. Goodbye!\n";
+
+    Camera camera(Vec2(0.0f, 0.0f), Vec2(static_cast<float>(window.getWidth()), static_cast<float>(window.getHeight())));
+    camera.setZoom(1.0f);
+
+    SceneManager scenes;
+    scenes.changeScene(std::make_unique<DemoScene>(&checkerTex, &quadRenderer, &camera));
+
+    while (window.isOpen()) {
+        time.update();
+        input.beginFrame();
+        window.pollEvents();
+        input.update(time.getDeltaTime());
+
+        scenes.handleInput(input, time.getDeltaTime());
+        scenes.update(time.getDeltaTime());
+
+        renderer.beginFrame();
+        renderer.clear(Color::Blue);
+        scenes.render(renderer);
+        renderer.endFrame();
+    }
+
+    Log::info("Shutting down...");
+    quadRenderer.shutdown();
+    Log::shutdown();
+    Platform::shutdown();
     return 0;
 }

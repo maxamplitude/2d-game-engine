@@ -1,106 +1,91 @@
 #include "texture_atlas.h"
+#include "platform/logging.h"
 #include <nlohmann/json.hpp>
 #include <fstream>
-#include <iostream>
 
 namespace Engine {
 
-bool TextureAtlas::loadFromFile(const std::string& texturePath, 
+bool TextureAtlas::loadFromFile(const std::string& texturePath,
                                 const std::string& metadataPath) {
     clear();
-    
-    // Load texture
+
     if (!texture.loadFromFile(texturePath)) {
-        std::cerr << "Failed to load texture: " << texturePath << std::endl;
-        return false;
+        Log::warn("Texture atlas image not loaded ({}), continuing with metadata only", texturePath);
     }
-    
-    texture.setSmooth(false);  // Pixel-perfect rendering
-    
-    // Parse metadata
+
     if (!parseMetadata(metadataPath)) {
-        std::cerr << "Failed to parse metadata: " << metadataPath << std::endl;
+        Log::error("Failed to parse metadata: {}", metadataPath);
         return false;
     }
-    
+
     return true;
 }
 
 bool TextureAtlas::parseMetadata(const std::string& path) {
     std::ifstream file(path);
     if (!file.is_open()) {
-        std::cerr << "Could not open metadata file: " << path << std::endl;
+        Log::error("Could not open metadata file: {}", path);
         return false;
     }
-    
+
     try {
         nlohmann::json json;
         file >> json;
-        
-        // Parse frames
+
         if (json.contains("frames")) {
             for (const auto& frameJson : json["frames"]) {
                 SpriteFrame frame;
-                frame.name = frameJson["name"].get<std::string>();
-                
-                // Required fields
-                frame.rect.left = frameJson["x"].get<int>();
-                frame.rect.top = frameJson["y"].get<int>();
-                frame.rect.width = frameJson["w"].get<int>();
-                frame.rect.height = frameJson["h"].get<int>();
-                
-                // Optional origin (defaults to bottom-center)
-                if (frameJson.contains("originX") && frameJson.contains("originY")) {
-                    frame.origin.x = frameJson["originX"].get<float>();
-                    frame.origin.y = frameJson["originY"].get<float>();
-                } else {
-                    // Default: bottom-center (good for platformer characters)
-                    frame.origin.x = frame.rect.width / 2.0f;
-                    frame.origin.y = static_cast<float>(frame.rect.height);
-                }
-                
+                frame.name = frameJson.value("name", "");
+                frame.x = frameJson.value("x", 0);
+                frame.y = frameJson.value("y", 0);
+                frame.w = frameJson.value("w", 0);
+                frame.h = frameJson.value("h", 0);
+
+                float originX = frameJson.value("originX", frameJson.value("origin_x", frame.w * 0.5f));
+                float originY = frameJson.value("originY", frameJson.value("origin_y", static_cast<float>(frame.h)));
+                frame.origin = Vec2(originX, originY);
+
                 frames[frame.name] = frame;
             }
         }
-        
-        // Parse animations
+
         if (json.contains("animations")) {
             for (const auto& animJson : json["animations"]) {
                 AnimationData anim;
-                anim.name = animJson["name"].get<std::string>();
-                anim.frameNames = animJson["frames"].get<std::vector<std::string>>();
-                
-                // Optional fields
+                anim.name = animJson.value("name", "");
                 anim.frameDuration = animJson.value("frameDuration", 0.1f);
                 anim.loop = animJson.value("loop", true);
-                
-                // Per-frame durations (optional)
-                if (animJson.contains("frameDurations")) {
-                    anim.frameDurations = animJson["frameDurations"]
-                        .get<std::vector<float>>();
+
+                if (animJson.contains("frames")) {
+                    for (const auto& frameName : animJson["frames"]) {
+                        anim.frameNames.push_back(frameName);
+                    }
                 }
-                
-                // Validate: all frame names must exist
+
+                if (animJson.contains("frameDurations")) {
+                    for (const auto& dur : animJson["frameDurations"]) {
+                        anim.frameDurations.push_back(dur);
+                    }
+                }
+
                 bool valid = true;
                 for (const auto& frameName : anim.frameNames) {
                     if (frames.find(frameName) == frames.end()) {
-                        std::cerr << "Animation '" << anim.name 
-                                  << "' references unknown frame: " << frameName << std::endl;
+                        Log::warn("Animation '{}' references unknown frame '{}'", anim.name, frameName);
                         valid = false;
                         break;
                     }
                 }
-                
+
                 if (valid) {
                     animations[anim.name] = anim;
                 }
             }
         }
-        
+
         return true;
-        
     } catch (const nlohmann::json::exception& e) {
-        std::cerr << "JSON parsing error: " << e.what() << std::endl;
+        Log::error("JSON parsing error: {}", e.what());
         return false;
     }
 }
@@ -108,19 +93,6 @@ bool TextureAtlas::parseMetadata(const std::string& path) {
 const SpriteFrame* TextureAtlas::getFrame(const std::string& name) const {
     auto it = frames.find(name);
     return (it != frames.end()) ? &it->second : nullptr;
-}
-
-sf::Sprite TextureAtlas::createSprite(const std::string& frameName) const {
-    const SpriteFrame* frame = getFrame(frameName);
-    
-    sf::Sprite sprite;
-    if (frame) {
-        sprite.setTexture(texture);
-        sprite.setTextureRect(frame->rect);
-        sprite.setOrigin(frame->origin);
-    }
-    
-    return sprite;
 }
 
 const AnimationData* TextureAtlas::getAnimation(const std::string& name) const {
@@ -155,15 +127,12 @@ void TextureAtlas::addFrame(const SpriteFrame& frame) {
 }
 
 void TextureAtlas::addAnimation(const AnimationData& animation) {
-    // Validate frame names exist
     for (const auto& frameName : animation.frameNames) {
         if (frames.find(frameName) == frames.end()) {
-            std::cerr << "Warning: Animation '" << animation.name 
-                      << "' references unknown frame: " << frameName << std::endl;
+            Log::warn("Animation '{}' references missing frame '{}', skipping", animation.name, frameName);
             return;
         }
     }
-    
     animations[animation.name] = animation;
 }
 

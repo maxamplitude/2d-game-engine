@@ -1,0 +1,8 @@
+[2025-12-23 14:45:06.323] [info] Logging initialized
+[2025-12-23 14:45:06.382] [info] Window created: 800x600
+[2025-12-23 14:45:06.618] [info] BGFX initialized: OpenGL 2.1
+[2025-12-23 14:45:06.618] [info] Shader program created: sprite.vert / sprite.frag
+[2025-12-23 14:45:06.618] [info] Backend: OpenGL 2.1
+[2025-12-23 14:45:06.618] [error] Failed to decode image: unknown image type
+[2025-12-23 14:45:32.058] [info] Shutting down...
+[2025-12-23 14:45:32.058] [info] Logging shutdown

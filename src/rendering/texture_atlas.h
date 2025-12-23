@@ -1,5 +1,6 @@
 #pragma once
-#include <SFML/Graphics.hpp>
+#include "rendering/texture.h"
+#include "math/vector.h"
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -7,18 +8,15 @@
 
 namespace Engine {
 
-// Single sprite frame definition
 struct SpriteFrame {
     std::string name;
-    sf::IntRect rect;           // Position in texture
-    sf::Vector2f origin{0, 0};  // Pivot point (for rotation/flipping)
-    
-    SpriteFrame() = default;
-    SpriteFrame(const std::string& n, const sf::IntRect& r, const sf::Vector2f& o = {0, 0})
-        : name(n), rect(r), origin(o) {}
+    int x = 0;
+    int y = 0;
+    int w = 0;
+    int h = 0;
+    Vec2 origin{0.0f, 0.0f};
 };
 
-// Animation sequence definition
 struct AnimationData {
     std::string name;
     std::vector<std::string> frameNames;
@@ -48,12 +46,11 @@ public:
     ~TextureAtlas() = default;
     
     // Loading
-    bool loadFromFile(const std::string& texturePath, 
-                     const std::string& metadataPath);
+    bool loadFromFile(const std::string& texturePath,
+                      const std::string& metadataPath);
     
     // Direct sprite access
     const SpriteFrame* getFrame(const std::string& name) const;
-    sf::Sprite createSprite(const std::string& frameName) const;
     
     // Animation access
     const AnimationData* getAnimation(const std::string& name) const;
@@ -61,7 +58,7 @@ public:
     bool hasAnimation(const std::string& name) const;
     
     // Texture access
-    const sf::Texture& getTexture() const { return texture; }
+    const Texture& getTexture() const { return texture; }
     
     // Metadata queries
     size_t getFrameCount() const { return frames.size(); }
@@ -76,7 +73,7 @@ public:
     void clear();
     
 private:
-    sf::Texture texture;
+    Texture texture;
     std::unordered_map<std::string, SpriteFrame> frames;
     std::unordered_map<std::string, AnimationData> animations;
     

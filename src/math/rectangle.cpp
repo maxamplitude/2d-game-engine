@@ -10,7 +10,7 @@ bool Rectangle::intersects(const Rectangle& other) const {
              top() >= other.bottom());
 }
 
-bool Rectangle::contains(const sf::Vector2f& point) const {
+bool Rectangle::contains(const Vec2& point) const {
     return point.x >= left() && point.x <= right() &&
            point.y >= top() && point.y <= bottom();
 }

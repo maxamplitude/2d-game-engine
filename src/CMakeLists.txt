@@ -1,28 +1,42 @@
 # Collect source files
 set(ENGINE_SOURCES
-    core/transform.cpp
     core/time_manager.cpp
+    core/transform.cpp
+    core/types.cpp
     math/rectangle.cpp
+    platform/logging.cpp
+    platform/file_system.cpp
+    platform/platform.cpp
+    platform/window.cpp
+    input/input_manager.cpp
+    rendering/renderer.cpp
+    rendering/texture.cpp
     rendering/texture_atlas.cpp
     rendering/camera.cpp
-    animation/animation_controller.cpp
-    animation/animation_state_machine.cpp
-    input/input_manager.cpp
+    rendering/shader.cpp
+    rendering/quad_renderer.cpp
     scene/scene_manager.cpp
-    scene/scene.cpp
 )
 
 set(ENGINE_HEADERS
-    core/transform.h
     core/time_manager.h
+    core/transform.h
+    core/types.h
+    math/vector.h
     math/rectangle.h
+    platform/logging.h
+    platform/file_system.h
+    platform/platform.h
+    platform/window.h
+    input/input_manager.h
+    rendering/renderer.h
+    rendering/texture.h
     rendering/texture_atlas.h
     rendering/camera.h
-    animation/animation_controller.h
-    animation/animation_state_machine.h
-    input/input_manager.h
-    scene/scene_manager.h
+    rendering/shader.h
+    rendering/quad_renderer.h
     scene/scene.h
+    scene/scene_manager.h
 )
 
 # Add nlohmann/json for metadata parsing
@@ -42,14 +56,18 @@ add_library(EngineLib STATIC
 
 target_include_directories(EngineLib PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/external
 )
 
 target_link_libraries(EngineLib PUBLIC
-    sfml-system
-    sfml-window
-    sfml-graphics
-    sfml-audio
+    bgfx
+    bx
+    bimg
+    glfw
+    glm
+    spdlog::spdlog
     nlohmann_json::nlohmann_json
+    $<$<AND:$<NOT:$<BOOL:${APPLE}>>,$<BOOL:${UNIX}>>:dl>
 )
 
 # Main executable
@@ -64,6 +82,14 @@ target_link_libraries(Engine PRIVATE
 # Set output directory
 set_target_properties(Engine PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+)
+
+# Copy compiled shaders next to the executable after build
+add_custom_command(TARGET Engine POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${SHADER_OUT_DIR}
+        $<TARGET_FILE_DIR:Engine>/shaders
+    COMMENT "Copying compiled shaders to executable directory..."
 )
 
 # Install

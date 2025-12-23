@@ -1,6 +1,6 @@
 #pragma once
-#include <SFML/Graphics/View.hpp>
-#include <SFML/System/Vector2.hpp>
+#include "math/vector.h"
+#include "math/rectangle.h"
 #include <random>
 
 namespace Engine {
@@ -16,19 +16,19 @@ enum class CameraFollowMode {
 class Camera {
 public:
     Camera();
-    Camera(const sf::Vector2f& position, const sf::Vector2f& size);
+    Camera(const Vec2& position, const Vec2& size);
     
     // Update (call every frame)
     void update(float dt);
     
     // Position
-    void setPosition(const sf::Vector2f& pos);
-    sf::Vector2f getPosition() const { return position; }
-    void move(const sf::Vector2f& offset);
+    void setPosition(const Vec2& pos);
+    Vec2 getPosition() const { return position; }
+    void move(const Vec2& offset);
     
     // Size (viewport dimensions in world units)
-    void setSize(const sf::Vector2f& size);
-    sf::Vector2f getSize() const { return size; }
+    void setSize(const Vec2& size);
+    Vec2 getSize() const { return size; }
     
     // Zoom
     void setZoom(float zoom);
@@ -41,14 +41,14 @@ public:
     float getRotation() const { return rotation; }
     
     // Target following
-    void setTarget(const sf::Vector2f* target);
+    void setTarget(const Vec2* target);
     void clearTarget() { targetPosition = nullptr; }
     void setFollowMode(CameraFollowMode mode) { followMode = mode; }
     void setFollowSpeed(float speed) { followSpeed = speed; }  // For smooth following
     
     // Deadzone (for deadzone follow mode)
-    void setDeadzone(const sf::FloatRect& zone);
-    sf::FloatRect getDeadzone() const { return deadzone; }
+    void setDeadzone(const Rectangle& zone);
+    Rectangle getDeadzone() const { return deadzone; }
     
     // Screen shake (trauma-based system)
     void addTrauma(float amount);  // 0.0 to 1.0, trauma decays over time
@@ -58,27 +58,20 @@ public:
     void setTraumaDecay(float decay) { traumaDecay = decay; }
     
     // Bounds (optional - keeps camera within world boundaries)
-    void setBounds(const sf::FloatRect& bounds);
+    void setBounds(const Rectangle& bounds);
     void clearBounds() { hasBounds = false; }
     bool isWithinBounds() const { return hasBounds; }
     
-    // View conversion
-    sf::View toSFMLView() const;
-    
-    // Coordinate conversion
-    sf::Vector2f screenToWorld(const sf::Vector2f& screenPos, 
-                              const sf::Vector2u& windowSize) const;
-    sf::Vector2f worldToScreen(const sf::Vector2f& worldPos, 
-                              const sf::Vector2u& windowSize) const;
-    
-    // Query
-    sf::FloatRect getViewBounds() const;  // Get visible rectangle in world space
-    bool isVisible(const sf::FloatRect& rect) const;  // Is rectangle visible?
+    Rectangle getViewBounds() const;
+    bool isVisible(const Rectangle& rect) const;
+
+    Mat4 getViewMatrix() const;
+    Mat4 getProjection(float viewportWidth, float viewportHeight) const;
     
 private:
     // Core properties
-    sf::Vector2f position;
-    sf::Vector2f size;  // View size in world units
+    Vec2 position;
+    Vec2 size;  // View size in world units
     float zoom;
     float rotation;  // Degrees
     
@@ -89,10 +82,10 @@ private:
     float zoomProgress;
     
     // Following
-    const sf::Vector2f* targetPosition;
+    const Vec2* targetPosition;
     CameraFollowMode followMode;
     float followSpeed;  // For smooth following
-    sf::FloatRect deadzone;  // For deadzone following
+    Rectangle deadzone;  // For deadzone following
     
     // Screen shake
     float trauma;  // 0.0 to 1.0
@@ -103,14 +96,14 @@ private:
     
     // Bounds
     bool hasBounds;
-    sf::FloatRect bounds;
+    Rectangle bounds;
     
     // Helper methods
     void updateFollowing(float dt);
     void updateZoom(float dt);
     void updateShake(float dt);
     void applyBounds();
-    sf::Vector2f calculateShakeOffset() const;
+    Vec2 calculateShakeOffset() const;
 };
 
 } // namespace Engine

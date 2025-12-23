@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "input/input_manager.h"
+#include <GLFW/glfw3.h>
 
 using namespace Engine;
 
@@ -8,9 +9,9 @@ TEST_CASE("InputManager initial state", "[input]") {
     InputManager input;
     
     SECTION("All keys start as Up") {
-        REQUIRE(input.getKeyState(sf::Keyboard::A) == InputState::Up);
-        REQUIRE_FALSE(input.isKeyDown(sf::Keyboard::Space));
-        REQUIRE_FALSE(input.isKeyPressed(sf::Keyboard::Space));
+        REQUIRE(input.getKeyState(GLFW_KEY_A) == InputState::Up);
+        REQUIRE_FALSE(input.isKeyDown(GLFW_KEY_SPACE));
+        REQUIRE_FALSE(input.isKeyPressed(GLFW_KEY_SPACE));
     }
     
     SECTION("Has default action mappings") {
@@ -24,22 +25,22 @@ TEST_CASE("InputManager tracks key press", "[input]") {
     InputManager input;
     
     input.beginFrame();
-    input.handleKeyPressed(sf::Keyboard::Space);
+    input.handleKeyPressed(GLFW_KEY_SPACE);
     
     SECTION("Key is just pressed on first frame") {
-        REQUIRE(input.getKeyState(sf::Keyboard::Space) == InputState::JustPressed);
-        REQUIRE(input.isKeyPressed(sf::Keyboard::Space));
-        REQUIRE(input.isKeyDown(sf::Keyboard::Space));
-        REQUIRE_FALSE(input.isKeyReleased(sf::Keyboard::Space));
+        REQUIRE(input.getKeyState(GLFW_KEY_SPACE) == InputState::JustPressed);
+        REQUIRE(input.isKeyPressed(GLFW_KEY_SPACE));
+        REQUIRE(input.isKeyDown(GLFW_KEY_SPACE));
+        REQUIRE_FALSE(input.isKeyReleased(GLFW_KEY_SPACE));
     }
     
     SECTION("Key becomes held on second frame") {
         input.update(0.016f);
         input.beginFrame();
         
-        REQUIRE(input.getKeyState(sf::Keyboard::Space) == InputState::Held);
-        REQUIRE_FALSE(input.isKeyPressed(sf::Keyboard::Space));
-        REQUIRE(input.isKeyDown(sf::Keyboard::Space));
+        REQUIRE(input.getKeyState(GLFW_KEY_SPACE) == InputState::Held);
+        REQUIRE_FALSE(input.isKeyPressed(GLFW_KEY_SPACE));
+        REQUIRE(input.isKeyDown(GLFW_KEY_SPACE));
     }
 }
 
@@ -48,7 +49,7 @@ TEST_CASE("InputManager tracks key release", "[input]") {
     
     // Press key
     input.beginFrame();
-    input.handleKeyPressed(sf::Keyboard::Space);
+    input.handleKeyPressed(GLFW_KEY_SPACE);
     input.update(0.016f);
     
     // Hold for one frame
@@ -57,21 +58,21 @@ TEST_CASE("InputManager tracks key release", "[input]") {
     
     // Release key
     input.beginFrame();
-    input.handleKeyReleased(sf::Keyboard::Space);
+    input.handleKeyReleased(GLFW_KEY_SPACE);
     
     SECTION("Key is just released") {
-        REQUIRE(input.getKeyState(sf::Keyboard::Space) == InputState::JustReleased);
-        REQUIRE(input.isKeyReleased(sf::Keyboard::Space));
-        REQUIRE_FALSE(input.isKeyDown(sf::Keyboard::Space));
-        REQUIRE_FALSE(input.isKeyPressed(sf::Keyboard::Space));
+        REQUIRE(input.getKeyState(GLFW_KEY_SPACE) == InputState::JustReleased);
+        REQUIRE(input.isKeyReleased(GLFW_KEY_SPACE));
+        REQUIRE_FALSE(input.isKeyDown(GLFW_KEY_SPACE));
+        REQUIRE_FALSE(input.isKeyPressed(GLFW_KEY_SPACE));
     }
     
     SECTION("Key becomes Up on next frame") {
         input.update(0.016f);
         input.beginFrame();
         
-        REQUIRE(input.getKeyState(sf::Keyboard::Space) == InputState::Up);
-        REQUIRE_FALSE(input.isKeyDown(sf::Keyboard::Space));
+        REQUIRE(input.getKeyState(GLFW_KEY_SPACE) == InputState::Up);
+        REQUIRE_FALSE(input.isKeyDown(GLFW_KEY_SPACE));
     }
 }
 
@@ -79,26 +80,26 @@ TEST_CASE("InputManager action mapping", "[input]") {
     InputManager input;
     
     SECTION("Maps action to key") {
-        input.mapAction("test_action", sf::Keyboard::Q);
+        input.mapAction("test_action", GLFW_KEY_Q);
         REQUIRE(input.hasKeyBinding("test_action"));
-        REQUIRE(input.getKeyBinding("test_action") == sf::Keyboard::Q);
+        REQUIRE(input.getKeyBinding("test_action") == GLFW_KEY_Q);
     }
     
     SECTION("Maps action to mouse button") {
-        input.mapAction("test_action", sf::Mouse::Right);
+        input.mapActionMouse("test_action", GLFW_MOUSE_BUTTON_RIGHT);
         REQUIRE(input.hasMouseBinding("test_action"));
-        REQUIRE(input.getMouseBinding("test_action") == sf::Mouse::Right);
+        REQUIRE(input.getMouseBinding("test_action") == GLFW_MOUSE_BUTTON_RIGHT);
     }
     
     SECTION("Remapping replaces existing binding") {
-        input.mapAction("jump", sf::Keyboard::Space);
-        input.mapAction("jump", sf::Keyboard::W);
+        input.mapAction("jump", GLFW_KEY_SPACE);
+        input.mapAction("jump", GLFW_KEY_W);
         
-        REQUIRE(input.getKeyBinding("jump") == sf::Keyboard::W);
+        REQUIRE(input.getKeyBinding("jump") == GLFW_KEY_W);
     }
     
     SECTION("Can unmap action") {
-        input.mapAction("test", sf::Keyboard::T);
+        input.mapAction("test", GLFW_KEY_T);
         input.unmapAction("test");
         
         REQUIRE_FALSE(input.hasKeyBinding("test"));
@@ -107,11 +108,11 @@ TEST_CASE("InputManager action mapping", "[input]") {
 
 TEST_CASE("InputManager action queries", "[input]") {
     InputManager input;
-    input.mapAction("test_action", sf::Keyboard::T);
+    input.mapAction("test_action", GLFW_KEY_T);
     
     SECTION("Action is active when key is down") {
         input.beginFrame();
-        input.handleKeyPressed(sf::Keyboard::T);
+        input.handleKeyPressed(GLFW_KEY_T);
         
         REQUIRE(input.isActionActive("test_action"));
         REQUIRE(input.isActionPressed("test_action"));
@@ -119,7 +120,7 @@ TEST_CASE("InputManager action queries", "[input]") {
     
     SECTION("Action pressed only on first frame") {
         input.beginFrame();
-        input.handleKeyPressed(sf::Keyboard::T);
+        input.handleKeyPressed(GLFW_KEY_T);
         REQUIRE(input.isActionPressed("test_action"));
         
         input.update(0.016f);
@@ -131,12 +132,12 @@ TEST_CASE("InputManager action queries", "[input]") {
     SECTION("Action released detection") {
         // Press
         input.beginFrame();
-        input.handleKeyPressed(sf::Keyboard::T);
+        input.handleKeyPressed(GLFW_KEY_T);
         input.update(0.016f);
         
         // Release
         input.beginFrame();
-        input.handleKeyReleased(sf::Keyboard::T);
+        input.handleKeyReleased(GLFW_KEY_T);
         
         REQUIRE(input.isActionReleased("test_action"));
         REQUIRE_FALSE(input.isActionActive("test_action"));
@@ -204,43 +205,43 @@ TEST_CASE("InputManager mouse button support", "[input]") {
     
     SECTION("Tracks mouse button press") {
         input.beginFrame();
-        input.handleMouseButtonPressed(sf::Mouse::Left);
+        input.handleMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT);
         
-        REQUIRE(input.isMouseButtonPressed(sf::Mouse::Left));
-        REQUIRE(input.isMouseButtonDown(sf::Mouse::Left));
-        REQUIRE(input.getMouseButtonState(sf::Mouse::Left) == InputState::JustPressed);
+        REQUIRE(input.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT));
+        REQUIRE(input.isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT));
+        REQUIRE(input.getMouseButtonState(GLFW_MOUSE_BUTTON_LEFT) == InputState::JustPressed);
     }
     
     SECTION("Mouse button becomes held") {
         input.beginFrame();
-        input.handleMouseButtonPressed(sf::Mouse::Left);
+        input.handleMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT);
         input.update(0.016f);
         
         input.beginFrame();
         
-        REQUIRE(input.getMouseButtonState(sf::Mouse::Left) == InputState::Held);
-        REQUIRE_FALSE(input.isMouseButtonPressed(sf::Mouse::Left));
-        REQUIRE(input.isMouseButtonDown(sf::Mouse::Left));
+        REQUIRE(input.getMouseButtonState(GLFW_MOUSE_BUTTON_LEFT) == InputState::Held);
+        REQUIRE_FALSE(input.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT));
+        REQUIRE(input.isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT));
     }
     
     SECTION("Tracks mouse button release") {
         // Press
         input.beginFrame();
-        input.handleMouseButtonPressed(sf::Mouse::Left);
+        input.handleMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT);
         input.update(0.016f);
         
         // Release
         input.beginFrame();
-        input.handleMouseButtonReleased(sf::Mouse::Left);
+        input.handleMouseButtonReleased(GLFW_MOUSE_BUTTON_LEFT);
         
-        REQUIRE(input.isMouseButtonReleased(sf::Mouse::Left));
-        REQUIRE_FALSE(input.isMouseButtonDown(sf::Mouse::Left));
+        REQUIRE(input.isMouseButtonReleased(GLFW_MOUSE_BUTTON_LEFT));
+        REQUIRE_FALSE(input.isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT));
     }
 }
 
 TEST_CASE("InputManager action callbacks", "[input]") {
     InputManager input;
-    input.mapAction("test_action", sf::Keyboard::T);
+    input.mapAction("test_action", GLFW_KEY_T);
     
     bool callbackFired = false;
     input.setActionPressedCallback("test_action", [&]() {
@@ -249,7 +250,7 @@ TEST_CASE("InputManager action callbacks", "[input]") {
     
     SECTION("Callback fires when action pressed") {
         input.beginFrame();
-        input.handleKeyPressed(sf::Keyboard::T);
+        input.handleKeyPressed(GLFW_KEY_T);
         input.update(0.016f);  // Triggers callbacks
         
         REQUIRE(callbackFired);
@@ -258,7 +259,7 @@ TEST_CASE("InputManager action callbacks", "[input]") {
     SECTION("Callback doesn't fire when action held") {
         // Press
         input.beginFrame();
-        input.handleKeyPressed(sf::Keyboard::T);
+        input.handleKeyPressed(GLFW_KEY_T);
         input.update(0.016f);
         callbackFired = false;
         
@@ -273,7 +274,7 @@ TEST_CASE("InputManager action callbacks", "[input]") {
         input.clearActionCallbacks();
         
         input.beginFrame();
-        input.handleKeyPressed(sf::Keyboard::T);
+        input.handleKeyPressed(GLFW_KEY_T);
         input.update(0.016f);
         
         REQUIRE_FALSE(callbackFired);
@@ -286,11 +287,11 @@ TEST_CASE("InputManager multiple keys for same action", "[input]") {
     // Note: Current design only supports one binding per action
     // If you need multiple bindings, you'd need to track multiple keys per action
     
-    input.mapAction("move_right", sf::Keyboard::D);
-    input.mapAction("move_right_alt", sf::Keyboard::Right);
+    input.mapAction("move_right", GLFW_KEY_D);
+    input.mapAction("move_right_alt", GLFW_KEY_RIGHT);
     
     input.beginFrame();
-    input.handleKeyPressed(sf::Keyboard::D);
+    input.handleKeyPressed(GLFW_KEY_D);
     
     REQUIRE(input.isActionActive("move_right"));
     REQUIRE_FALSE(input.isActionActive("move_right_alt"));
@@ -298,10 +299,10 @@ TEST_CASE("InputManager multiple keys for same action", "[input]") {
 
 TEST_CASE("InputManager prevents double buffering active actions", "[input]") {
     InputManager input;
-    input.mapAction("jump", sf::Keyboard::Space);
+    input.mapAction("jump", GLFW_KEY_SPACE);
     
     input.beginFrame();
-    input.handleKeyPressed(sf::Keyboard::Space);
+    input.handleKeyPressed(GLFW_KEY_SPACE);
     
     // Try to buffer while action is active
     input.bufferAction("jump", 0.1f);
@@ -309,7 +310,7 @@ TEST_CASE("InputManager prevents double buffering active actions", "[input]") {
     // Release and try to consume buffer
     input.update(0.016f);
     input.beginFrame();
-    input.handleKeyReleased(sf::Keyboard::Space);
+    input.handleKeyReleased(GLFW_KEY_SPACE);
     input.update(0.016f);
     
     // Buffer shouldn't exist because action was active when buffered
@@ -319,9 +320,9 @@ TEST_CASE("InputManager prevents double buffering active actions", "[input]") {
 TEST_CASE("InputManager clear all mappings", "[input]") {
     InputManager input;
     
-    input.mapAction("action1", sf::Keyboard::A);
-    input.mapAction("action2", sf::Keyboard::B);
-    input.mapAction("action3", sf::Mouse::Left);
+    input.mapAction("action1", GLFW_KEY_A);
+    input.mapAction("action2", GLFW_KEY_B);
+    input.mapActionMouse("action3", GLFW_MOUSE_BUTTON_LEFT);
     
     input.clearAllMappings();
     
@@ -335,9 +336,9 @@ TEST_CASE("InputManager handles rapid press-release", "[input]") {
     
     // Press and release in same frame (before update)
     input.beginFrame();
-    input.handleKeyPressed(sf::Keyboard::Space);
-    input.handleKeyReleased(sf::Keyboard::Space);
+    input.handleKeyPressed(GLFW_KEY_SPACE);
+    input.handleKeyReleased(GLFW_KEY_SPACE);
     
     // State should be JustReleased (release overwrites press)
-    REQUIRE(input.getKeyState(sf::Keyboard::Space) == InputState::JustReleased);
+    REQUIRE(input.getKeyState(GLFW_KEY_SPACE) == InputState::JustReleased);
 }
