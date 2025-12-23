@@ -58,6 +58,17 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(spdlog)
 
+# --- SoLoud (audio) ---
+FetchContent_Declare(
+    soloud
+    GIT_REPOSITORY https://github.com/jarikomppa/soloud.git
+    GIT_TAG RELEASE_20200207
+)
+set(SOLOUD_BUILD_STATIC ON CACHE BOOL "" FORCE)
+set(SOLOUD_BUILD_SHARED OFF CACHE BOOL "" FORCE)
+set(SOLOUD_BACKEND_MINIAUDIO ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(soloud)
+
 # --- STB single headers ---
 file(DOWNLOAD
     https://raw.githubusercontent.com/nothings/stb/master/stb_image.h

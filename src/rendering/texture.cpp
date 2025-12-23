@@ -54,6 +54,31 @@ bool Texture::loadFromMemory(const void* data, uint32_t size) {
     return true;
 }
 
+bool Texture::loadFromRGBA(uint16_t w, uint16_t h, const uint8_t* rgba, bool generateMips) {
+    if (!rgba) {
+        Log::error("RGBA buffer is null");
+        return false;
+    }
+    width = w;
+    height = h;
+    const bgfx::Memory* mem = bgfx::copy(rgba, static_cast<uint32_t>(w) * h * 4);
+    uint64_t flags = BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT;
+    handle = bgfx::createTexture2D(
+        width, height,
+        generateMips,
+        1,
+        bgfx::TextureFormat::RGBA8,
+        flags,
+        mem
+    );
+    if (!bgfx::isValid(handle)) {
+        Log::error("Failed to create BGFX texture from RGBA buffer");
+        return false;
+    }
+    Log::info("Texture created from RGBA buffer: {}x{}", width, height);
+    return true;
+}
+
 void Texture::destroy() {
     if (bgfx::isValid(handle)) {
         bgfx::destroy(handle);

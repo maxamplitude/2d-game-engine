@@ -32,3 +32,8 @@ Thumbs.db
 *.suo
 
 audit/
+.cursor/
+.specstory/
+
+Testing/
+*.log

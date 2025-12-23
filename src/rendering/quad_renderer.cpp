@@ -1,5 +1,6 @@
 #include "quad_renderer.h"
 #include <bgfx/bgfx.h>
+#include "platform/logging.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <cstring>
 
@@ -18,20 +19,29 @@ void SpriteVertex::init() {
 bool QuadRenderer::init() {
     SpriteVertex::init();
     if (!shader.load("sprite.vert", "sprite.frag")) {
+        Log::critical("QuadRenderer: failed to load sprite shader");
         return false;
     }
-    u_viewProj = bgfx::createUniform("u_viewProj", bgfx::UniformType::Mat4);
+    u_mvp = bgfx::createUniform("u_mvp", bgfx::UniformType::Mat4);
     s_texture = bgfx::createUniform("s_texture", bgfx::UniformType::Sampler);
-    return bgfx::isValid(u_viewProj) && bgfx::isValid(s_texture);
+    if (!bgfx::isValid(u_mvp) || !bgfx::isValid(s_texture)) {
+        Log::critical("QuadRenderer: failed to create required uniforms");
+        return false;
+    }
+    return true;
 }
 
 void QuadRenderer::shutdown() {
-    if (bgfx::isValid(u_viewProj)) bgfx::destroy(u_viewProj);
+    if (bgfx::isValid(u_mvp)) bgfx::destroy(u_mvp);
     if (bgfx::isValid(s_texture)) bgfx::destroy(s_texture);
     shader.destroy();
 }
 
 void QuadRenderer::draw(const Mat4& viewProj, const Mat4& model, bgfx::TextureHandle texture, const Color& color, uint16_t viewId) {
+    if (!bgfx::isValid(u_mvp) || !bgfx::isValid(s_texture) || !bgfx::isValid(shader.getProgram()) || !bgfx::isValid(texture)) {
+        Log::warn("QuadRenderer::draw skipped due to invalid handles (uniforms/program/texture)");
+        return;
+    }
     SpriteVertex verts[4];
     const float w = 1.0f;
     const float h = 1.0f;
@@ -59,7 +69,7 @@ void QuadRenderer::draw(const Mat4& viewProj, const Mat4& model, bgfx::TextureHa
     bgfx::setVertexBuffer(0, &tvb, 0, 4);
     bgfx::setIndexBuffer(&tib, 0, 6);
     bgfx::setTexture(0, s_texture, texture);
-    bgfx::setUniform(u_viewProj, glm::value_ptr(viewProj));
+    bgfx::setUniform(u_mvp, glm::value_ptr(viewProj));
     bgfx::setState(BGFX_STATE_DEFAULT | BGFX_STATE_MSAA);
     bgfx::submit(viewId, shader.getProgram());
 }

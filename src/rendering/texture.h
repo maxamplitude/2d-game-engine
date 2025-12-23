@@ -11,6 +11,7 @@ public:
 
     bool loadFromFile(const std::string& path);
     bool loadFromMemory(const void* data, uint32_t size);
+    bool loadFromRGBA(uint16_t w, uint16_t h, const uint8_t* rgba, bool generateMips = false);
 
     uint16_t getWidth() const { return width; }
     uint16_t getHeight() const { return height; }

@@ -36,7 +36,10 @@ int main() {
     }
 
     QuadRenderer quadRenderer;
-    quadRenderer.init();
+    if (!quadRenderer.init()) {
+        Log::critical("QuadRenderer failed to initialize. Exiting.");
+        return 1;
+    }
 
     TimeManager time;
     InputManager input(window.getNativeHandle());
@@ -87,13 +90,13 @@ int main() {
 
     Log::info("Backend: {}", renderer.getBackendName());
 
-    // Create a tiny checkerboard texture
+    // Create a tiny checkerboard texture (RGBA)
     Texture checkerTex;
     {
-        const uint32_t w = 64, h = 64;
+        const uint16_t w = 64, h = 64;
         std::vector<uint8_t> pixels(w * h * 4);
-        for (uint32_t y = 0; y < h; ++y) {
-            for (uint32_t x = 0; x < w; ++x) {
+        for (uint16_t y = 0; y < h; ++y) {
+            for (uint16_t x = 0; x < w; ++x) {
                 bool dark = ((x / 8) + (y / 8)) % 2 == 0;
                 uint8_t c = dark ? 40 : 200;
                 size_t idx = (y * w + x) * 4;
@@ -103,7 +106,7 @@ int main() {
                 pixels[idx + 3] = 255;
             }
         }
-        checkerTex.loadFromMemory(pixels.data(), static_cast<uint32_t>(pixels.size()));
+        checkerTex.loadFromRGBA(w, h, pixels.data());
     }
 
     Camera camera(Vec2(0.0f, 0.0f), Vec2(static_cast<float>(window.getWidth()), static_cast<float>(window.getHeight())));

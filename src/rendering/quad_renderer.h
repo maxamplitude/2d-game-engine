@@ -28,7 +28,7 @@ public:
 
 private:
     Shader shader;
-    bgfx::UniformHandle u_viewProj = BGFX_INVALID_HANDLE;
+    bgfx::UniformHandle u_mvp = BGFX_INVALID_HANDLE;
     bgfx::UniformHandle s_texture = BGFX_INVALID_HANDLE;
 };
 

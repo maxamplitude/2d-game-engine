@@ -1,9 +1,11 @@
 # Collect source files
 set(ENGINE_SOURCES
+    animation/animation_controller.cpp
     core/time_manager.cpp
     core/transform.cpp
     core/types.cpp
     math/rectangle.cpp
+    audio/audio_engine.cpp
     platform/logging.cpp
     platform/file_system.cpp
     platform/platform.cpp
@@ -15,15 +17,19 @@ set(ENGINE_SOURCES
     rendering/camera.cpp
     rendering/shader.cpp
     rendering/quad_renderer.cpp
+    rendering/render_queue.cpp
+    rendering/sprite_batch.cpp
     scene/scene_manager.cpp
 )
 
 set(ENGINE_HEADERS
+    animation/animation_controller.h
     core/time_manager.h
     core/transform.h
     core/types.h
     math/vector.h
     math/rectangle.h
+    audio/audio_engine.h
     platform/logging.h
     platform/file_system.h
     platform/platform.h
@@ -35,6 +41,8 @@ set(ENGINE_HEADERS
     rendering/camera.h
     rendering/shader.h
     rendering/quad_renderer.h
+    rendering/render_queue.h
+    rendering/sprite_batch.h
     scene/scene.h
     scene/scene_manager.h
 )
@@ -44,7 +52,7 @@ include(FetchContent)
 FetchContent_Declare(
     json
     GIT_REPOSITORY https://github.com/nlohmann/json.git
-    GIT_TAG v3.11.2
+    GIT_TAG v3.11.3
 )
 FetchContent_MakeAvailable(json)
 
@@ -57,6 +65,8 @@ add_library(EngineLib STATIC
 target_include_directories(EngineLib PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/external
+    ${soloud_SOURCE_DIR}/include
+    ${soloud_BINARY_DIR}/include
 )
 
 target_link_libraries(EngineLib PUBLIC
@@ -67,6 +77,8 @@ target_link_libraries(EngineLib PUBLIC
     glm
     spdlog::spdlog
     nlohmann_json::nlohmann_json
+    $<$<TARGET_EXISTS:soloud_static>:soloud_static>
+    $<$<AND:$<NOT:$<TARGET_EXISTS:soloud_static>>,$<TARGET_EXISTS:soloud>>:soloud>
     $<$<AND:$<NOT:$<BOOL:${APPLE}>>,$<BOOL:${UNIX}>>:dl>
 )
 

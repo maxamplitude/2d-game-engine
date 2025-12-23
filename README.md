@@ -1,6 +1,6 @@
 # 2D Game Engine
 
-A lightweight, testable 2D game engine built with SFML and modern C++17.
+A lightweight, testable 2D game engine now using GLFW + BGFX
 
 ## Features
 
@@ -11,62 +11,30 @@ A lightweight, testable 2D game engine built with SFML and modern C++17.
 
 ## Prerequisites
 
-- CMake 3.16+
-- C++17 compatible compiler (GCC 9+, Clang 10+, MSVC 2019+)
-- SFML 2.5+ development libraries
-
-### Installing SFML
-
-**Ubuntu/Debian:**
-```bash
-sudo apt-get install libsfml-dev
-```
-
-**macOS (Homebrew):**
-```bash
-brew install sfml
-```
-
-**Windows:**
-- Download from [SFML website](https://www.sfml-dev.org/download.php)
-- Or use vcpkg: `vcpkg install sfml`
+- CMake 3.20+
+- C++20 compatible compiler (GCC 11+, Clang 12+, MSVC 2019+)
+- Git
+*(All third-party libs are fetched automatically: GLFW, BGFX/bx/bimg, GLM, spdlog, Catch2, nlohmann/json, stb headers.)*
 
 ## Building
 ```bash
-# Clone the repository
 git clone https://github.com/yourusername/game-engine.git
 cd game-engine
 
-# Create build directory
-mkdir build && cd build
-
-# Configure
-cmake .. -DBUILD_TESTS=ON
-
-# Build
-cmake --build .
+cmake -S . -B build -DBUILD_TESTS=ON
+cmake --build build
 
 # Run engine
-./src/engine
+./build/Engine
 
 # Run tests
-ctest --output-on-failure
-# Or directly:
-./tests/EngineTests
+ctest --test-dir build --output-on-failure
 ```
 
-## Project Structure
-```
-src/
-├── core/          # Core systems (time, transforms, resources)
-├── math/          # Math utilities (vectors, rectangles, collision)
-├── entities/      # Entity system (coming soon)
-└── rendering/     # Rendering systems (coming soon)
-
-tests/
-├── core/          # Core system tests
-└── math/          # Math tests
-```
+## Notes
+- Linux: prefers X11; if X11 is missing but GLFW is Wayland-enabled, BGFX falls back to Wayland handles.
+- Shaders are compiled via `compile_shaders` target and copied next to the executable.
+- Tests live in `/tests` (Catch2). Assets for tests/examples are under `/assets/test_data`.
 
 ## Development Workflow
 
